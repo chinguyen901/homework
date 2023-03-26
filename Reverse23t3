@@ -1,0 +1,57 @@
+#include<stdio.h>
+#include<stdint.h>
+#include<string.h>
+
+char Arr[] = {"Make no mistake All your attempts to create a chilling effect a throttling effect a strangulating effect on open fearless speech relating to public influence will not stop either Rahul Gandhi or the Congress Party"};
+
+int String_Length(char s[]) 
+{
+   int i=0;
+ 
+   while(s[i]!='\0')
+      i++;
+ 
+   return i;    
+}// Measure input string length
+ 
+void String_Reverse(char str[]) 
+{
+   int i, j, len;
+   char ch;
+ 
+   j = len = String_Length(str) - 1;
+   i = 0;
+ 
+   while(i < j) 
+   {
+      ch = str[j];
+      str[j] = str[i];
+      str[i] = ch;
+      i++;
+      j--;
+   }
+}// Reverse the characters of each substring
+ 
+int main (int argc, char const *argv[]) {
+    int i, j, n;
+    n = String_Length(Arr);
+    char Reverse_chain[10000]= "";
+    char Small_chain[50];
+ 
+    for(i = n-1; i >= 0; --i) 
+    {
+        for(j = 0; i >= 0 && Arr[i] != ' '; --i,++j)
+        {
+            Small_chain[j] = Arr[i];
+        }
+    
+    Small_chain[j] = '\0'; // Split large string into small string (word by letter)
+    String_Reverse(Small_chain); // Reverse characters in a split string
+    strcat(Reverse_chain, Small_chain); // Add small string after character inversion to a new character array
+    strcat(Reverse_chain, " "); // Add " " to separate words
+
+   }
+    printf("Initial input data:\n %s", Arr);
+    printf("\n Data after performing reverse:\n %s", Reverse_chain);
+    return 0;
+}
