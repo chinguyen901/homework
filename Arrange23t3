@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdint.h>
+
+uint8_t ARR[] = {1, 1, 9, 3, 7, 1, 2, 6, 7, 8, 2, 9, 9, 3};
+
+void ArrangeArr(uint8_t arr[]){
+    int tg;
+    for ( int i = 0; i < (sizeof(ARR)-1); i ++){
+        for ( int j = i+1; j<sizeof(ARR);j++){
+            if ( arr[i] > arr [j]){
+                tg = arr[i];
+                arr[i] = arr[j];
+                arr[j]=tg;
+            } 
+        }
+    }
+}// Sort in ascending order
+void OutputArr(uint8_t arr[]){
+    printf("Array after sorting : ");
+    for (int i = 0; i < sizeof(ARR); i++){
+        printf("%d  ", arr[i]);
+    }
+    printf("\n");
+}// Output string value of array
+void Number_Of_Repetitions(uint8_t arr){
+    uint8_t Number[sizeof(ARR)];
+    for(int i=0; i < sizeof(Number); i++) Number[i]=0;
+    for(int i=0; i < sizeof(ARR); i++) Number[ARR[i]]++;
+    for(int i=0; i < sizeof(ARR); i++){
+        if(Number[i]>0){
+            printf("The number of times the %d value repeats : %d .\n" , i,Number[i]);
+        }
+    }
+} // Check output the number of occurrences of the value in the array
+
+int main(int argc, char const *argv[]){
+    ArrangeArr(ARR);
+    OutputArr(ARR);
+    Number_Of_Repetitions(ARR);
+    return 0;
+}
