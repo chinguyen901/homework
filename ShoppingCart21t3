@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdint.h>
+
+uint8_t Your_Cart;
+
+typedef enum{
+    SHIRT          = 1 << 0,   //0b00000001
+    SHORT          = 1 << 1,   //0b00000010
+    SKIRT          = 1 << 2,   //0b00000100
+    DRESS          = 1 << 3,   //0b00001000
+    RING           = 1 << 4,   //0b00010000
+    BRACELET       = 1 << 5,   //0b00100000
+    SHOES          = 1 << 6,   //0b01000000
+    BAG            = 1 << 7,   //0b10000000
+} Personal_Belongings;
+
+char *Items[] = {"SHIRT","SHORT","SKIRT","DRESS","RING","BRACELET","SHOES","BAG"};
+
+void Add_To_Cart (uint8_t *Cart, Personal_Belongings Name_items){
+    *Cart |= Name_items;
+}
+
+void Remove_From_Cart (uint8_t *Cart, Personal_Belongings Name_items){
+    *Cart &= ~Name_items;
+}
+
+void Check_Items (uint8_t Cart, Personal_Belongings Name_items){
+    for( int i=0 ; i<8 ; i++ )
+    {
+        if((Name_items & ( 1 << i ) ) == (1 << i))
+        {
+            if((Cart & (1 << i))==(1<<i))
+                printf("HAVE item %s in yuor cart. \n", Items[i]);
+            else 
+                printf("NO item %s in your cart. \n", Items[i]);
+        }
+    }
+}
+void Show_Cart (uint8_t Cart){
+    printf("Items in your cart : ");
+    for( int i=0 ; i<8 ; i++ )
+    {
+        if((Cart & ( 1 << i ) ) == (1 << i))
+            printf("%s  ", Items[i]);
+    }
+}
+
+int main(int argc, char const *argv[])
+{
+    Add_To_Cart(&Your_Cart, SHIRT|DRESS|RING|SHOES|BAG);
+    Remove_From_Cart(&Your_Cart, DRESS|SHOES);
+    Check_Items(Your_Cart, SHIRT|DRESS|RING|BAG);
+    Show_Cart(Your_Cart);
+    return 0;
+}
