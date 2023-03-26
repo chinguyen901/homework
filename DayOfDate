@@ -1,0 +1,50 @@
+#include<stdio.h>
+#include<stdint.h>
+#include<stdlib.h>
+
+void DayOfDate( int day, int month, int year ){
+   int n;
+   div_t Div1, Div2, Div3;//Function that takes integers and remainders
+   Div1 = div((3*(month+1)),5); 
+   Div2 = div(year,4);
+   Div3 = div((day + 2*month +Div1.quot + year + Div2.quot),7);
+    
+
+   if ((day + 2*month +Div1.quot + year + Div2.quot) > 7 )
+      n = Div3.rem;//Recipe on WElearn
+   else
+      printf("Outside the scope of the program"); // The formula does not work in these cases
+   
+   switch (n)
+   {
+   case 0: printf("Sunday\n");
+      break;
+   case 1: printf("Monday\n");
+      break;
+   case 2: printf("Tuesday\n");
+      break;
+   case 3: printf("Wednesday\n");
+      break;
+   case 4: printf("Thursday");
+      break;
+   case 5: printf("Friday");
+      break;
+   case 6: printf("Saturday");
+      break;
+   default: printf("Input Error");
+      break;
+   }
+};// The function contains the formula to calculate the day of date to find
+int main(int argc, char const* argv[]){
+   int DAY, MONTH, YEAR;
+   printf("Enter the date you want to determine \n");
+   printf("-Day : ");
+   scanf("%d", &DAY);
+   printf("\n-Month : ");
+   scanf("%d", &MONTH);
+   printf("\n-Year : ");
+   scanf("%d", &YEAR);
+   printf("\n %d - %d - %d is ", DAY,MONTH,YEAR);
+   DayOfDate(DAY, MONTH, YEAR);
+   return 0;
+}
