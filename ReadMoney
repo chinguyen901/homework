@@ -1,0 +1,289 @@
+#include<stdio.h>
+#include<stdint.h>
+#include <string.h>
+
+char *Milion[] = {"Mot Trieu", "Hai Trieu", "Ba Trieu", "Bon Trieu", "Nam Trieu", "Sau Trieu", "Bay Trieu", "Tam Trieu", "Chin Trieu"};
+char *Hundred[] = {"Khong Trăm", "Mot Tram", "Hai Tram", "Ba Tram", "Bon Tram", "Nam Tram", "Sau Tram", "Bay Tram", "Tam Tram", "Chin Tram"};
+char *Ten[] = {"Le", "Muoi", "Hai Muoi", "Ba Muoi", "Bon Muoi", "Nam Muoi", "Sau Muoi", "Bay Muoi", "Tam Muoi", "Chin Muoi"};
+char *UnitThousand[] = {"Nghin", "Mot Nghin", "Hai Nghin", "Ba Nghin", "Bon Nghin", "Nam Nghin", "Sau Nghin", "Bay Nghin", "Tam Nghin", "Chin Nghin"};
+char *UnitHundred[] = {"Dong", "Mot Dong", "Hai Dong", "Ba Dong", "Bon Dong", "Nam Dong", "Sau Dong", "Bay Dong", "Tam Dong", "Chin Dong"};
+// Declare the units Money you want to read it.
+void ReadMoney(char T[]){
+      int i;
+      i = T[0]-48;
+      switch (i)
+      {
+      case 1:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 2:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 3:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 4:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 5:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 6:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 7:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 8:
+         printf(" %s", Milion[i-1]);
+         break;
+      case 9:
+         printf(" %s", Milion[i-1]);
+         break;
+      default: printf("-");
+         break;
+      }
+      i = T[1]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0) printf(" ");
+      else {  
+         switch (i)
+         {
+         case 0:
+            printf(" %s", Hundred[i]);
+            break;
+         case 1:
+            printf(" %s", Hundred[i]);
+            break;
+         case 2:
+            printf(" %s", Hundred[i]);
+            break;
+         case 3:
+            printf(" %s", Hundred[i]);
+            break;
+         case 4:
+            printf(" %s", Hundred[i]);
+            break;
+         case 5:
+            printf(" %s", Hundred[i]);
+            break;
+         case 6:
+            printf(" %s", Hundred[i]);
+            break;
+         case 7:
+            printf(" %s", Hundred[i]);
+            break;
+         case 8:
+            printf(" %s", Hundred[i]);
+            break;
+         case 9:
+            printf(" %s", Hundred[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      i = T[2]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0) printf(" ");
+      else {  
+         switch (i)
+         {
+         case 0:
+            printf(" %s", Ten[i]);
+            break;
+         case 1:
+            printf(" %s", Ten[i]);
+            break;
+         case 2:
+            printf(" %s", Ten[i]);
+            break;
+         case 3:
+            printf(" %s", Ten[i]);
+            break;
+         case 4:
+            printf(" %s", Ten[i]);
+            break;
+         case 5:
+            printf(" %s", Ten[i]);
+            break;
+         case 6:
+            printf(" %s", Ten[i]);
+            break;
+         case 7:
+            printf(" %s", Ten[i]);
+            break;
+         case 8:
+            printf(" %s", Ten[i]);
+            break;
+         case 9:
+            printf(" %s", Ten[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      i = T[3]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0 & (T[3]-48)==0) printf(" ");
+      else{
+         switch (i)
+         {
+         case 0:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 1:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 2:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 3:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 4:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 5:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 6:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 7:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 8:
+            printf(" %s", UnitThousand[i]);
+            break;
+         case 9:
+            printf(" %s", UnitThousand[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      i = T[4]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0 & (T[3]-48)==0 & (T[4]-48)==0) printf(" ");
+      else {   
+         switch (i)
+         {
+         case 0:
+            printf(" %s", Hundred[i]);
+            break;
+         case 1:
+            printf(" %s", Hundred[i]);
+            break;
+         case 2:
+            printf(" %s", Hundred[i]);
+            break;
+         case 3:
+            printf(" %s", Hundred[i]);
+            break;
+         case 4:
+            printf(" %s", Hundred[i]);
+            break;
+         case 5:
+            printf(" %s", Hundred[i]);
+            break;
+         case 6:
+            printf(" %s", Hundred[i]);
+            break;
+         case 7:
+            printf(" %s", Hundred[i]);
+            break;
+         case 8:
+            printf(" %s", Hundred[i]);
+            break;
+         case 9:
+            printf(" %s", Hundred[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      i = T[5]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0 & (T[3]-48)==0 & (T[4]-48)==0 & (T[5]-48)==0) printf(" ");
+      else {   
+         switch (i)
+         {
+         case 0:
+            printf(" %s", Ten[i]);
+            break;
+         case 1:
+            printf(" %s", Ten[i]);
+            break;
+         case 2:
+            printf(" %s", Ten[i]);
+            break;
+         case 3:
+            printf(" %s", Ten[i]);
+            break;
+         case 4:
+            printf(" %s", Ten[i]);
+            break;
+         case 5:
+            printf(" %s", Ten[i]);
+            break;
+         case 6:
+            printf(" %s", Ten[i]);
+            break;
+         case 7:
+            printf(" %s", Ten[i]);
+            break;
+         case 8:
+            printf(" %s", Ten[i]);
+            break;
+         case 9:
+            printf(" %s", Ten[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      i = T[6]-48;
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0 & (T[3]-48)==0 & (T[4]-48)==0 & (T[5]-48)==0 &(T[6]-48)==0) printf(" ");
+      else {  
+         switch (i)
+         {
+         case 0:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 1:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 2:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 3:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 4:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 5:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 6:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 7:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 8:
+            printf(" %s", UnitHundred[i]);
+            break;
+         case 9:
+            printf(" %s", UnitHundred[i]);
+            break;
+         default: printf("-");
+            break;
+         }
+      };
+      if ((T[0]-48)==0 & (T[1]-48)==0 & (T[2]-48)==0 & (T[3]-48)==0 & (T[4]-48)==0 & (T[5]-48)==0 &(T[6]-48)==0)
+         printf(" Khong Dong");
+};// Let the words in the Char array run corresponding to each currency name.
+int main(int agrc, char const* argv){
+   char TheMoney[7];//The currency limit to enter is 7 digits
+   printf("Enter the money you want to read : ");
+   scanf("%s", TheMoney);
+   ReadMoney(TheMoney);
+   return 0;
+}
