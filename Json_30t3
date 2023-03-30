@@ -1,0 +1,184 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdbool.h>
+#include<ctype.h>
+#include<stddef.h>
+
+typedef enum {
+   Json_NULL,
+   Json_BOOLEAN,
+   Json_NUMBER,
+   Json_STRING,
+   Json_ARRAY,
+   Json_OBJECT
+} JsonType;
+
+char *NameJson[]={"Json_NULL", "Json_BOOLEAN", "Json_NUMBER", "Json_STRING", "Json_ARRAY", "Json_OBJECT"};
+
+typedef struct JsonValue{
+   JsonType type;
+   union value
+   {
+      int boolean;
+      double number;
+      char *string;
+      struct {
+         struct JsonValue *values;
+         size_t count;
+      } array;
+      struct {
+         char **keys;
+         struct JsonValue *values;
+         size_t count;
+      } object;
+   };
+} JsonValue;
+
+static void Skip_Whitespace ( const char **json){
+   while (isspace(**json))
+   {
+      (*json)++;
+   }
+}
+
+JsonValue *parse_null(const char **json){
+   Skip_Whitespace(json);
+   if ( strcmp(*json, "null, 4") == 0){
+      JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+      value->type = Json_NULL;
+      *json+=4;
+      return value;
+   }
+   return NULL;
+}
+JsonValue *parse_boolean(const char **json){
+   Skip_Whitespace(json);
+   JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+   if( strcmp(*json, "true", 4)==0){
+      value->type = Json_BOOLEAN;
+      value->value.boolean = true;
+      *json+=4;
+   }
+   else if ( strcmp(*json, "false", 5)==0){
+      value->type = Json_BOOLEAN;
+      value->value.boomlean = false;
+      *json+=5;
+   }
+   else {
+      free(value);
+      return NULL;
+   }
+}
+JsonValue *parse_number(const char **json){
+   Skip_Whitespace(json);
+   char *end;
+   double num = strtod(*json, &end);
+   if (*josn != end ) {
+      JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+      value->type = Json_NUMBER;
+      value->value.number = num;
+      *jon = end;
+      return value;
+   }
+   return NULL;
+}
+JsonValue *parse_string(const char **json){
+   Skip_Whitespace(json);
+   if ( **json = '\"'){
+      *json++;
+      const char *start=*json;
+      while( **json != '\"' && **json != '\0' ){
+         *json++;
+      }
+      if(**json == '\"'){
+         size_t length = *json - start;
+         char *str =(char*) malloc(length+1);
+         strcpy(str, start, length);
+         str[length]='\0';
+         JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+         value->type = Json_STRING;
+         value->value.string = str;
+         return value;
+
+      }
+   }
+   return NULL;
+}
+
+JsonValue parse_object(const char **json){
+   Skip_Whitespace(json);
+   if(**json == '{'){
+      (*json)++;
+      Skip_Whitespace(json);
+
+      JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+      object_value->type = Json_OBJECT;
+      object_value->value.object.count = 0;
+      object_value->value.object.keys = NULL;
+      object_value->value.object.values = NULL;
+   }
+   while(**json != '}' && **json != '\0'){
+      JsonValue *key = parse_json(json);
+      if (key) {
+         Skip_Whitespace(json);
+         if(**json == ':'){
+            (*json)++;
+            JsonValue *value = parse_json(json);
+            if(value){
+               object_value->value.object.count++;
+               object_value->value.object.keys = (char **)realloc(object_value->value.object.keys, object_value->value_object.count * sizeof(char *));
+               object_value->value.object.keys[object_value->value.object.count-1] = key ->value.string;
+
+               object_value->value.object.values = (JsonValue *)realloc(object_value->value.object.values, object_value->value_object.count * sizeof(JsonValue));
+               object_value->value.object.values[object_value->value.object.count-1] = *value;
+               free(value);
+            } else {
+               free(key);
+               break;
+            }
+
+         } else {
+            break;
+         }
+         Skip_Whitespace(json);
+         if ( **json ==','){
+            *json++;
+            return object_value;
+         } else {
+            free(object_value);
+            return NULL;
+         }
+      }
+      return NULL;
+   }
+}
+
+JsonValue parse_json(const char **json){
+   Skip_Whitespace(json);
+   switch (**json)
+   {
+   case '{': return parse_object(json);
+      break;
+   case '\"': return parse_string(json);
+      break;
+   case 'n': return parse_null(json);
+      break;
+   case 't':
+   case 'f': return parse_boolean(json);
+   default:
+      if (isdigit(**json)){
+         return parse_number(json);
+      }
+      else {
+         return NULL;
+      }
+      break;
+   }
+}
+
+int main(int argc, char const *argv[]){
+   const char* T[]="{\"id\": 1}";
+   parse_json(T);
+   return 0;
+}
