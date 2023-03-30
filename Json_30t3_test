@@ -1,0 +1,123 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdbool.h>
+#include<ctype.h>
+#include<stddef.h>
+
+typedef enum{
+  Jsonnumber,
+  Jsonobject
+}JsonType;
+
+typedef struct {
+   JsonType type;
+   union value
+   {
+      double number;
+      struct {
+         char **keys;
+         struct JsonValue *values;
+         size_t count;
+      } object;
+   };
+}JsonValue;
+
+static void Skip_Whitespace ( const char **json){
+   while (isspace(**json))
+   {
+      (*json)++;
+   }
+}
+
+JsonValue parse_json(const char **json){
+   Skip_Whitespace(json);
+   switch (**json)
+   {
+    case '{': return *parse_object(json);
+      break;
+    default:
+      if (isdigit(**json)){
+         return *parse_number(json);
+      }
+      else {
+         return NULL;
+      }
+      break;
+   }
+}
+
+JsonValue *parse_number(const char **json){
+   Skip_Whitespace(json);
+   char *end;
+   double num = strtod(*json, &end);
+   if (*josn != end ) {
+      JsonValue *value = (JsonValue*) malloc(size_t(JsonValue));
+      value->type = Json_NUMBER;
+      value->value.number = num;
+      *jon = end;
+      return value;
+   }
+   return NULL;
+}
+JsonValue *parse_object(const char **json){
+  Skip_Whitespace(json);
+  if (**json == '{'){
+    (*json)++;
+    Skip_Whitespace(json);
+    JsonValue *value = JsonValue* malloc(size_t JsonValue);
+    value->type = Jsonobject;
+    value->value.object.count =0;
+    value->value.object.keys = NULL;
+    value->value.object.values = NULL;
+  }
+  // tìm key của object
+  if(**json == '\"'){
+    (*json)++;
+    const char *start = *json;
+    while (**json != '\"' && **json != '\0'){
+      (*json)++;
+    }
+    if(**json == '\"'){
+      size_t L = *json - start;
+      char *str=(char*) malloc(L+1);
+      strcpy(str, start, L);
+      str[L]='\0';
+      JsonValue *value = (JsonValue*) malloc(size_t JsonValue);
+      value->type = Jsonobject;
+      value->value.object.count = 0;
+      value->value.object.keys = str;
+      value->value.object.values = NULL;
+    }
+    (*json)++;
+  }
+  Skip_Whitespace(json);
+  if(**json == ':'){
+    (*json)++;
+  }
+  JsonValue *value = parse_json(json);
+}
+
+void check(const JsonValue *json_value, char **buffer, size_t *buffer_size){
+  char num_str[64];
+  snprintf(num_str, size_t(num_str),"%.17g",json_value->value.number);
+}
+
+
+int main(int argc, char const *argv[])
+{ 
+   const char* json ="{\"id\":1}";
+// //    int i=0;
+// //     while (json[i]!=0)
+// //     {
+// //         if(json[i] = '{' || json[i] ='}'){
+// //             printf("%c", json[i]);
+// //         }
+// //         i++;
+// //     }
+//     for(int i=0;i<8;i++){
+//         printf("%c", json[i]);
+//     }
+check(JsonValue, json, size_t (json));
+  return 0;
+}
