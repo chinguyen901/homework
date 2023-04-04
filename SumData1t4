@@ -1,0 +1,106 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdint.h>
+
+int compar(const void *a, const void *b){
+   char *x=(char*)a;
+   char *y=(char*)b;
+   return strcmp(x,y);
+}
+void InputData(char carl[][100]){
+   int number;
+   int i=0;
+      do
+      {  
+         printf("1. Enter a number of the Double \n");
+         printf("2. Enter a number of the Int\n");
+         printf("3. Enter Chars or String of Char\n");
+         printf("Enter number 0 to exit\n");
+
+         printf("Number: ");
+         scanf("%d", &number);
+         getchar();
+         switch (number)
+         {
+         case 1: 
+            char TypeDouble[100];
+            printf(" - Double is :");
+            scanf("%s", &TypeDouble);
+            strcpy(carl[i], TypeDouble);
+            // carl[i] =(char*) &TypeDouble;
+            i++;
+            break;
+         case 2: 
+            char TypeInt[100];
+            printf(" - Int is :");
+            scanf("%s", &TypeInt);
+            strcpy(carl[i], TypeInt);
+            // carl[i] =(char*) &TypeInt;
+            i++;
+            break;
+         case 3: 
+            char TypeChars[100];
+            printf(" - Chars or String is :");
+            gets(TypeChars);
+            strcpy(carl[i], TypeChars);
+            i++;
+            break;
+         default:
+            break;
+         }
+      } while(number!=0);
+   qsort(carl,i,sizeof(carl[0]),compar);// Sắp xếp lại chuỗi theo thứ tự
+   int a;
+   int sum=0;
+   i=0;
+   while(carl[i][0]>=48 && carl[i][0]<=57){
+      int so= carl[i][0]-48;
+      for(int j=1;j<=strlen(carl[i]); j++)
+      {
+         if(carl[i][j] >= 48 && carl[i][j] <= 57){
+            int a = carl[i][j]-48;
+            so = so*10 +a;
+         }
+         // else if ( carl[i][j] = 46 )
+         // {
+         //    j++;
+         //    int x = 2;
+         //    int c = (carl[i][j] -48)/10;
+         //    int o;
+         //    o = j+1;
+         //    for(o; o<strlen(carl[i]); o++)
+         //    {
+         //       if (carl[i][o] >= 48 && carl[i][o] <= 57) 
+         //       {
+         //          int b = carl[i][o]-48;
+         //          c = c + b/(10^x);
+         //          x++;
+         //       }
+         //       else {
+         //          break;
+         //       }
+         //    }
+         //    so = so +c;
+         // }
+          else {
+            break;
+         }
+         }
+          sum +=so;// Tính tổng số trong chuỗi
+         i++;
+      }
+      printf("\nSum of number in the InputData: %d\n " ,sum);
+   }
+
+
+int main(int argc, char const *argv[])
+{
+   char Data[5][100];
+   InputData(Data);
+   printf("\nTHE INPUT DATA IS :\n");
+   for ( int i=0; i<5; i++){
+      printf("- %s\n", Data[i]);
+   }
+    return 0;
+}
