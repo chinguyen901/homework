@@ -11,6 +11,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSize, FontWeight, Radius, Shadow, Spacing } from '@/utils/theme';
+import { useUserStore } from '@/stores/userStore';
+import { PlanTier } from '@/types/trending.types';
 
 const MENU_SECTIONS = [
   {
@@ -39,8 +41,17 @@ const MENU_SECTIONS = [
   },
 ];
 
+const PLAN_LABELS: Record<PlanTier, string> = {
+  free: 'Free Plan',
+  pro: '⚡ Pro Plan · 99k/tháng',
+  business: '🚀 Business Plan',
+};
+
 export function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const displayName = useUserStore((s) => s.displayName);
+  const avatarInitial = useUserStore((s) => s.avatarInitial);
+  const planTier = useUserStore((s) => s.planTier);
 
   return (
     <View style={styles.container}>
@@ -57,13 +68,13 @@ export function ProfileScreen() {
         >
           {/* Avatar */}
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>N</Text>
+            <Text style={styles.avatarText}>{avatarInitial}</Text>
             <View style={styles.avatarOnline} />
           </View>
-          <Text style={styles.profileName}>Nguyen Chi</Text>
+          <Text style={styles.profileName}>{displayName}</Text>
           <Text style={styles.profileRole}>Affiliate Marketer · TikTok Shop</Text>
           <View style={styles.planBadge}>
-            <Text style={styles.planBadgeText}>⚡ Pro Plan · 99k/tháng</Text>
+            <Text style={styles.planBadgeText}>{PLAN_LABELS[planTier]}</Text>
           </View>
         </LinearGradient>
 

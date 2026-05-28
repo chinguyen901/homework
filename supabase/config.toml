@@ -1,0 +1,10 @@
+project_id = "wmwamragwnybixxxzahm"
+
+[functions.get-trending]
+verify_jwt = false
+
+[functions.get-hashtags]
+verify_jwt = false
+
+[functions.get-analytics]
+verify_jwt = false

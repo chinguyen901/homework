@@ -10,7 +10,7 @@
 
 ## Trạng thái dự án hiện tại
 
-> **Phase: React Native App** — Expo SDK 56 đã khởi tạo, 5 screens đầy đủ, navigation hoạt động. Chưa kết nối backend.
+> **Phase: State & Service Layer** — 5 screens dùng React Query hooks + Zustand stores. Mock data trong service layer. Chưa kết nối backend thật.
 
 ### Đã hoàn thành
 
@@ -44,12 +44,14 @@
 
 ### Việc cần làm tiếp theo
 
-- [ ] **Phase 5 — Backend:** Tạo `.env.local` với API keys → `src/services/supabaseClient.ts` → `src/services/tiktokService.ts`
-- [ ] **Phase 5 — React Query hooks:** `useTrending.ts`, `useHashtags.ts`, `useAnalytics.ts` thay mock data
-- [ ] **Phase 5 — Zustand stores:** `filterStore.ts` (category, dateRange), `userStore.ts` (plan tier)
+- [x] **Phase 5 — Zustand stores:** `filterStore.ts` (category, dateRange), `userStore.ts` (plan tier) ✅
+- [x] **Phase 5 — Service skeleton:** `supabaseClient.ts` (stub), `tiktokService.ts` (mock data) ✅
+- [x] **Phase 5 — React Query hooks:** `useTrending.ts`, `useHashtags.ts`, `useAnalytics.ts` ✅
+- [x] **Phase 5 — Screens update:** Tất cả 5 screens dùng hooks, skeleton loading ✅
+- [ ] **Phase 5 — Backend thật:** Tạo `.env.local` với Supabase keys → deploy Edge Functions → thay mock bằng real API
 - [ ] **Phase 5 — Firebase Auth:** Google Sign-In + Email/Password qua `authService.ts`
-- [ ] **Phase 6 — Loading/Error states:** Skeleton loading, error card + retry button, empty state
-- [ ] **Phase 6 — Monetization gates:** Kiểm tra plan tier, modal upsell Pro khi vượt giới hạn Free
+- [ ] **Phase 6 — Error states:** Error card + retry button, empty state cho mỗi screen
+- [ ] **Phase 6 — Monetization gates:** Modal upsell Pro khi Free vượt giới hạn
 - [ ] Cập nhật `CLAUDE.md` trạng thái sau mỗi session làm việc
 
 ---
@@ -166,12 +168,13 @@ src/
     └── formatters.ts
 ```
 
-**Thư mục chưa có (tạo ở Phase 5):**
+**Đã tạo ở Phase 5 (session 2):**
 ```
 src/
-├── hooks/           ← useTrending.ts, useHashtags.ts, useAnalytics.ts
-├── services/        ← supabaseClient.ts, tiktokService.ts, authService.ts
-└── stores/          ← filterStore.ts, userStore.ts
+├── hooks/           ← useTrending.ts, useHashtags.ts, useAnalytics.ts ✅
+├── services/        ← supabaseClient.ts (stub), tiktokService.ts (mock) ✅
+│                       authService.ts (chưa có)
+└── stores/          ← filterStore.ts, userStore.ts ✅
 ```
 
 ---

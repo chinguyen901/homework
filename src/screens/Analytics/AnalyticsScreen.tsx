@@ -12,56 +12,59 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated2, { FadeInUp, FadeInLeft } from 'react-native-reanimated';
 import { Colors, FontSize, FontWeight, Radius, Shadow, Spacing } from '@/utils/theme';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { formatViews } from '@/utils/formatters';
+import { SkeletonCard } from '@/components/ui';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const CHART_W = SCREEN_W - Spacing.xl * 2 - 32;
 const BAR_MAX_H = 100;
-
-const SUMMARY_CARDS = [
-  { icon: '📈', value: '24.5M', label: 'Tổng lượt xem', change: '▲ +23.4%', changeColor: Colors.success },
-  { icon: '🏷️', value: '245', label: 'Hashtag trending', change: '▲ +18 mới', changeColor: Colors.success },
-  { icon: '📦', value: '1.2K', label: 'Sản phẩm hot', change: '→ Ổn định', changeColor: Colors.warning },
-  { icon: '🎬', value: '9.9K', label: 'Video viral', change: '▼ -2.1%', changeColor: Colors.danger },
-];
-
-// Heights as % of BAR_MAX_H
-const CHART_DATA = {
-  labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-  thisWeek: [0.6, 0.75, 0.55, 0.9, 0.7, 1.0, 0.65],
-  lastWeek: [0.45, 0.6, 0.5, 0.7, 0.55, 0.8, 0.5],
-};
-
-const NICHES = [
-  { icon: '👗', name: 'Thời trang', pct: 38, colors: ['#A78BFA', '#7C3AED'] as const },
-  { icon: '💄', name: 'Mỹ phẩm', pct: 27, colors: ['#6EE7B7', '#10B981'] as const },
-  { icon: '🍜', name: 'Đồ ăn', pct: 22, colors: ['#FCD34D', '#F59E0B'] as const },
-  { icon: '📱', name: 'Phụ kiện', pct: 13, colors: ['#FCA5A5', '#EF4444'] as const },
-];
+const CHART_BAR_COUNT = 7;
+const NICHE_COUNT = 4;
 
 const PERIOD_TABS = ['7N', '30N', '3T'];
 
 export function AnalyticsScreen() {
   const insets = useSafeAreaInsets();
   const [activePeriod, setActivePeriod] = useState(0);
-  const barAnims = useRef(CHART_DATA.thisWeek.map(() => new Animated.Value(0))).current;
-  const barAnimsB = useRef(CHART_DATA.lastWeek.map(() => new Animated.Value(0))).current;
-  const nicheAnims = useRef(NICHES.map(() => new Animated.Value(0))).current;
+
+  const { summary, chartData, niches, isLoading } = useAnalytics();
+
+  // Fixed-size refs — must match CHART_BAR_COUNT and NICHE_COUNT from mock data
+  const barAnims = useRef(Array.from({ length: CHART_BAR_COUNT }, () => new Animated.Value(0))).current;
+  const barAnimsB = useRef(Array.from({ length: CHART_BAR_COUNT }, () => new Animated.Value(0))).current;
+  const nicheAnims = useRef(Array.from({ length: NICHE_COUNT }, () => new Animated.Value(0))).current;
 
   useEffect(() => {
-    const barAnimations = CHART_DATA.thisWeek.map((h, i) =>
-      Animated.timing(barAnims[i], { toValue: h, duration: 600, delay: i * 60, useNativeDriver: false })
+    if (isLoading || chartData.length === 0 || niches.length === 0) return;
+
+    barAnims.forEach((a) => a.setValue(0));
+    barAnimsB.forEach((a) => a.setValue(0));
+    nicheAnims.forEach((a) => a.setValue(0));
+
+    const barAnimations = chartData.slice(0, CHART_BAR_COUNT).map((d, i) =>
+      Animated.timing(barAnims[i], { toValue: d.value, duration: 600, delay: i * 60, useNativeDriver: false })
     );
-    const barAnimationsB = CHART_DATA.lastWeek.map((h, i) =>
-      Animated.timing(barAnimsB[i], { toValue: h, duration: 600, delay: i * 60 + 100, useNativeDriver: false })
+    const barAnimationsB = chartData.slice(0, CHART_BAR_COUNT).map((d, i) =>
+      Animated.timing(barAnimsB[i], { toValue: d.secondaryValue ?? 0, duration: 600, delay: i * 60 + 100, useNativeDriver: false })
     );
-    const nicheAnimations = NICHES.map((n, i) =>
+    const nicheAnimations = niches.slice(0, NICHE_COUNT).map((n, i) =>
       Animated.timing(nicheAnims[i], { toValue: n.pct / 100, duration: 800, delay: 200 + i * 100, useNativeDriver: false })
     );
     Animated.parallel([...barAnimations, ...barAnimationsB, ...nicheAnimations]).start();
-  }, []);
+  }, [isLoading, chartData, niches]);
 
   const barW = (CHART_W - 8 * 6) / 7 / 2 - 2;
   const nicheBarW = SCREEN_W - Spacing.xl * 2 - 32;
+
+  const summaryCards = summary
+    ? [
+        { icon: '📈', value: formatViews(summary.totalViews), label: 'Tổng lượt xem', change: '▲ +23.4%', changeColor: Colors.success },
+        { icon: '🏷️', value: String(summary.trendingHashtags), label: 'Hashtag trending', change: '▲ +18 mới', changeColor: Colors.success },
+        { icon: '📦', value: formatViews(summary.hotProducts), label: 'Sản phẩm hot', change: '→ Ổn định', changeColor: Colors.warning },
+        { icon: '🎬', value: formatViews(summary.viralVideos), label: 'Video viral', change: '▼ -2.1%', changeColor: Colors.danger },
+      ]
+    : [];
 
   return (
     <View style={styles.container}>
@@ -79,14 +82,20 @@ export function AnalyticsScreen() {
 
         {/* Summary grid 2x2 */}
         <Animated2.View entering={FadeInUp.delay(80).duration(400)} style={styles.summaryGrid}>
-          {SUMMARY_CARDS.map((card) => (
-            <View key={card.label} style={styles.summaryCard}>
-              <Text style={styles.scIcon}>{card.icon}</Text>
-              <Text style={styles.scVal}>{card.value}</Text>
-              <Text style={styles.scLbl}>{card.label}</Text>
-              <Text style={[styles.scChg, { color: card.changeColor }]}>{card.change}</Text>
-            </View>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <View key={i} style={styles.summaryCardSkeleton}>
+                  <SkeletonCard />
+                </View>
+              ))
+            : summaryCards.map((card) => (
+                <View key={card.label} style={styles.summaryCard}>
+                  <Text style={styles.scIcon}>{card.icon}</Text>
+                  <Text style={styles.scVal}>{card.value}</Text>
+                  <Text style={styles.scLbl}>{card.label}</Text>
+                  <Text style={[styles.scChg, { color: card.changeColor }]}>{card.change}</Text>
+                </View>
+              ))}
         </Animated2.View>
 
         {/* Bar chart */}
@@ -111,8 +120,8 @@ export function AnalyticsScreen() {
 
           {/* Bars */}
           <View style={styles.barChart}>
-            {CHART_DATA.labels.map((label, i) => (
-              <View key={label} style={styles.barGroup}>
+            {chartData.slice(0, CHART_BAR_COUNT).map((d, i) => (
+              <View key={d.label} style={styles.barGroup}>
                 <View style={[styles.barWrap, { height: BAR_MAX_H }]}>
                   <Animated.View
                     style={[
@@ -129,7 +138,7 @@ export function AnalyticsScreen() {
                     ]}
                   />
                 </View>
-                <Text style={styles.barLbl}>{label}</Text>
+                <Text style={styles.barLbl}>{d.label}</Text>
               </View>
             ))}
           </View>
@@ -153,8 +162,8 @@ export function AnalyticsScreen() {
             <Text style={styles.acTitle}>Top Niche Tháng Này</Text>
           </View>
           <View style={styles.nicheList}>
-            {NICHES.map((niche, i) => (
-              <View key={niche.name} style={styles.nicheRow}>
+            {niches.slice(0, NICHE_COUNT).map((niche, i) => (
+              <View key={niche.id} style={styles.nicheRow}>
                 <View style={styles.nicheHeader}>
                   <Text style={styles.nicheName}>{niche.icon} {niche.name}</Text>
                   <Text style={styles.nichePct}>{niche.pct}%</Text>
@@ -219,6 +228,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     ...Shadow.cardSm,
+  },
+  summaryCardSkeleton: {
+    width: (Dimensions.get('window').width - Spacing.xl * 2 - Spacing.sm) / 2,
   },
   scIcon: {
     fontSize: 24,

@@ -12,51 +12,37 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSize, FontWeight, Radius, Shadow, Spacing } from '@/utils/theme';
+import { useTrending } from '@/hooks/useTrending';
+import { useFilterStore } from '@/stores/filterStore';
+import { formatViews, formatGrowth, formatCurrency } from '@/utils/formatters';
+import { SkeletonCard } from '@/components/ui';
+import { TrendCategory } from '@/types/trending.types';
 
 const FILTERS = ['Tất cả', 'Thời trang', 'Mỹ phẩm', 'Đồ ăn', 'Gia dụng', 'Phụ kiện'];
+const CATEGORY_MAP: (TrendCategory | null)[] = [null, 'fashion', 'beauty', 'food', 'home', 'gadget'];
 
-const PRODUCTS = [
-  {
-    rank: 1,
-    icon: '👗', bg: Colors.primaryBg,
-    name: 'Váy Maxi Boho Mùa Hè 2024', cat: 'Thời trang nữ', price: '245.000đ',
-    videos: '12.4K', views: '2.4M', growth: '+127%', up: true,
-    rankBg: '#FEF3C7', rankColor: '#D97706',
-  },
-  {
-    rank: 2,
-    icon: '💄', bg: '#D1FAE5',
-    name: 'Son Tint Hàn Quốc 3CE #Rose', cat: 'Mỹ phẩm', price: '189.000đ',
-    videos: '8.9K', views: '1.8M', growth: '+89%', up: true,
-    rankBg: '#F3F4F6', rankColor: '#6B7280',
-  },
-  {
-    rank: 3,
-    icon: '🍜', bg: '#FEF3C7',
-    name: 'Mì Cay Buldak 2x Spicy', cat: 'Đồ ăn & thức uống', price: '55.000đ',
-    videos: '21K', views: '3.1M', growth: '+203%', up: true,
-    rankBg: '#F3F4F6', rankColor: '#6B7280',
-  },
-  {
-    rank: 4,
-    icon: '📱', bg: '#E0E7FF',
-    name: 'Ốp Lưng Magsafe iPhone 15', cat: 'Phụ kiện điện tử', price: '120.000đ',
-    videos: '5.6K', views: '990K', growth: '+45%', up: true,
-    rankBg: '#F3F4F6', rankColor: '#6B7280',
-  },
-  {
-    rank: 5,
-    icon: '🏠', bg: '#FEE2E2',
-    name: 'Đèn LED RGB Trang Trí Phòng', cat: 'Đồ gia dụng', price: '85.000đ',
-    videos: '4.2K', views: '780K', growth: '-5%', up: false,
-    rankBg: '#F3F4F6', rankColor: '#6B7280',
-  },
-];
+const CATEGORY_LABELS: Record<TrendCategory, string> = {
+  all: 'Tất cả',
+  fashion: 'Thời trang',
+  beauty: 'Mỹ phẩm',
+  food: 'Đồ ăn & thức uống',
+  home: 'Đồ gia dụng',
+  gadget: 'Phụ kiện điện tử',
+};
 
 export function TrendingScreen() {
   const insets = useSafeAreaInsets();
-  const [activeFilter, setActiveFilter] = useState(0);
   const [search, setSearch] = useState('');
+
+  const selectedCategory = useFilterStore((s) => s.selectedCategory);
+  const setCategory = useFilterStore((s) => s.setCategory);
+  const { trends, isLoading } = useTrending();
+
+  const activeFilter = CATEGORY_MAP.indexOf(selectedCategory);
+
+  const filteredTrends = search.trim()
+    ? trends.filter((t) => t.name.toLowerCase().includes(search.trim().toLowerCase()))
+    : trends;
 
   return (
     <View style={styles.container}>
@@ -100,7 +86,7 @@ export function TrendingScreen() {
           {FILTERS.map((filter, idx) => (
             <TouchableOpacity
               key={filter}
-              onPress={() => setActiveFilter(idx)}
+              onPress={() => setCategory(CATEGORY_MAP[idx])}
               style={[styles.filterChip, activeFilter === idx && styles.filterChipActive]}
               activeOpacity={0.7}
             >
@@ -113,32 +99,42 @@ export function TrendingScreen() {
 
         {/* Product cards */}
         <View style={styles.cardList}>
-          {PRODUCTS.map((p, index) => (
-            <Animated.View key={p.name} entering={FadeInUp.delay(160 + index * 80).duration(400)}>
-              <TouchableOpacity style={styles.productCard} activeOpacity={0.85}>
-                <View style={styles.pcTop}>
-                  <View style={[styles.rankBadge, { backgroundColor: p.rankBg }]}>
-                    <Text style={[styles.rankText, { color: p.rankColor }]}>#{p.rank}</Text>
-                  </View>
-                  <View style={[styles.pcImg, { backgroundColor: p.bg }]}>
-                    <Text style={styles.pcEmoji}>{p.icon}</Text>
-                  </View>
-                  <View style={styles.pcInfo}>
-                    <Text style={styles.pcName} numberOfLines={2}>{p.name}</Text>
-                    <Text style={styles.pcCat}>{p.cat}</Text>
-                    <Text style={styles.pcPrice}>{p.price}</Text>
-                  </View>
-                </View>
-                <View style={styles.pcStats}>
-                  <StatCell value={p.videos} label="Video" />
-                  <View style={styles.statDivider} />
-                  <StatCell value={p.views} label="Lượt xem" />
-                  <View style={styles.statDivider} />
-                  <StatCell value={p.growth} label="Tăng trưởng" color={p.up ? Colors.success : Colors.danger} />
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+            : filteredTrends.map((trend, index) => {
+                const rankBg = trend.rank === 1 ? '#FEF3C7' : '#F3F4F6';
+                const rankColor = trend.rank === 1 ? '#D97706' : '#6B7280';
+                return (
+                  <Animated.View key={trend.id} entering={FadeInUp.delay(160 + index * 80).duration(400)}>
+                    <TouchableOpacity style={styles.productCard} activeOpacity={0.85}>
+                      <View style={styles.pcTop}>
+                        <View style={[styles.rankBadge, { backgroundColor: rankBg }]}>
+                          <Text style={[styles.rankText, { color: rankColor }]}>#{trend.rank}</Text>
+                        </View>
+                        <View style={[styles.pcImg, { backgroundColor: trend.bgColor ?? Colors.primaryBg }]}>
+                          <Text style={styles.pcEmoji}>{trend.icon ?? '📦'}</Text>
+                        </View>
+                        <View style={styles.pcInfo}>
+                          <Text style={styles.pcName} numberOfLines={2}>{trend.name}</Text>
+                          <Text style={styles.pcCat}>{CATEGORY_LABELS[trend.category]}</Text>
+                          <Text style={styles.pcPrice}>{formatCurrency(trend.price ?? 0)}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.pcStats}>
+                        <StatCell value={formatViews(trend.videoCount)} label="Video" />
+                        <View style={styles.statDivider} />
+                        <StatCell value={formatViews(trend.views)} label="Lượt xem" />
+                        <View style={styles.statDivider} />
+                        <StatCell
+                          value={formatGrowth(trend.growth)}
+                          label="Tăng trưởng"
+                          color={trend.growth >= 0 ? Colors.success : Colors.danger}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })}
         </View>
       </ScrollView>
     </View>

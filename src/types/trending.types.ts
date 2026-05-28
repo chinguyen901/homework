@@ -10,6 +10,7 @@ export interface TrendItem {
   growth: number;
   rank: number;
   icon?: string;
+  bgColor?: string;
   isLive?: boolean;
 }
 
@@ -37,3 +38,22 @@ export interface ChartDataPoint {
 }
 
 export type PlanTier = 'free' | 'pro' | 'business';
+
+export interface NicheItem {
+  id: string;
+  icon: string;
+  name: string;
+  pct: number;
+  colors: readonly [string, string];
+}
+
+export interface FetchTrendingParams {
+  category?: TrendCategory;
+  dateRange?: '1d' | '7d' | '30d';
+  limit?: number;
+}
+
+export interface FetchHashtagsParams {
+  dateRange?: '1d' | '7d' | '30d';
+  limit?: number;
+}

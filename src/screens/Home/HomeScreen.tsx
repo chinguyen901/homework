@@ -12,6 +12,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSize, FontWeight, Radius, Shadow, Spacing } from '@/utils/theme';
+import { useTrending } from '@/hooks/useTrending';
+import { useUserStore } from '@/stores/userStore';
+import { formatViews, formatGrowth, formatCurrency } from '@/utils/formatters';
+import { Skeleton, SkeletonCard } from '@/components/ui';
+import { TrendItem } from '@/types/trending.types';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -22,22 +27,17 @@ const QUICK_ACTIONS = [
   { icon: '⚡', label: 'Cảnh Báo', bg: '#FEE2E2' },
 ];
 
-const TREND_CHIPS = [
-  { icon: '👗', name: 'Thời Trang Hè', views: '2.4M lượt xem', growth: '+127%', badge: '🔥 Hot', isHot: true },
-  { icon: '💄', name: 'Mỹ Phẩm Hàn', views: '1.8M lượt xem', growth: '+89%', badge: 'Tăng', isHot: false },
-  { icon: '🍜', name: 'Đồ Ăn Vặt', views: '3.1M lượt xem', growth: '+203%', badge: '🔥 Hot', isHot: true },
-  { icon: '📱', name: 'Phụ Kiện Phone', views: '990K lượt xem', growth: '+45%', badge: 'Mới', isHot: false },
-];
-
-const TOP_PRODUCTS = [
-  { icon: '👗', name: 'Váy Maxi Boho Mùa Hè', sub: '12,450 video đang dùng', val: '245k', growth: '+127%', up: true, bg: Colors.primaryBg },
-  { icon: '💄', name: 'Son Tint Hàn Quốc 3CE', sub: '8,900 video đang dùng', val: '189k', growth: '+89%', up: true, bg: '#D1FAE5' },
-  { icon: '🍜', name: 'Mì Cay Buldak Hàn', sub: '21,000 video đang dùng', val: '55k', growth: '+203%', up: true, bg: '#FEF3C7' },
-  { icon: '🏠', name: 'Đèn LED Trang Trí Phòng', sub: '5,670 video đang dùng', val: '120k', growth: '-5%', up: false, bg: '#FEE2E2' },
-];
+function getTrendBadge(trend: TrendItem): { label: string; isHot: boolean } {
+  if (trend.growth > 100) return { label: '🔥 Hot', isHot: true };
+  if (trend.isLive) return { label: 'Mới', isHot: false };
+  return { label: 'Tăng', isHot: false };
+}
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { trends, isLoading } = useTrending();
+  const displayName = useUserStore((s) => s.displayName);
+  const avatarInitial = useUserStore((s) => s.avatarInitial);
 
   return (
     <View style={styles.container}>
@@ -56,7 +56,7 @@ export function HomeScreen() {
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.greeting}>Xin chào 👋</Text>
-              <Text style={styles.userName}>Nguyen Chi</Text>
+              <Text style={styles.userName}>{displayName}</Text>
             </View>
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
@@ -64,7 +64,7 @@ export function HomeScreen() {
                 <View style={styles.notifDot} />
               </TouchableOpacity>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>N</Text>
+                <Text style={styles.avatarText}>{avatarInitial}</Text>
                 <View style={styles.avatarOnline} />
               </View>
             </View>
@@ -105,21 +105,32 @@ export function HomeScreen() {
           entering={FadeInUp.delay(200).duration(400)}
           contentContainerStyle={styles.trendScroll}
         >
-          {TREND_CHIPS.map((chip) => (
-            <TouchableOpacity key={chip.name} style={styles.trendChip} activeOpacity={0.85}>
-              <View style={styles.chipTop}>
-                <Text style={styles.chipIcon}>{chip.icon}</Text>
-                <View style={[styles.chipBadge, chip.isHot ? styles.chipBadgeHot : styles.chipBadgeTrend]}>
-                  <Text style={[styles.chipBadgeText, chip.isHot ? styles.chipBadgeHotText : styles.chipBadgeTrendText]}>
-                    {chip.badge}
-                  </Text>
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <View key={i} style={styles.trendChipSkeleton}>
+                  <Skeleton width={130} height={110} borderRadius={Radius.card} />
                 </View>
-              </View>
-              <Text style={styles.chipName}>{chip.name}</Text>
-              <Text style={styles.chipViews}>{chip.views}</Text>
-              <Text style={styles.chipGrowth}>▲ {chip.growth}</Text>
-            </TouchableOpacity>
-          ))}
+              ))
+            : trends.slice(0, 4).map((trend) => {
+                const badge = getTrendBadge(trend);
+                return (
+                  <TouchableOpacity key={trend.id} style={styles.trendChip} activeOpacity={0.85}>
+                    <View style={styles.chipTop}>
+                      <Text style={styles.chipIcon}>{trend.icon ?? '📦'}</Text>
+                      <View style={[styles.chipBadge, badge.isHot ? styles.chipBadgeHot : styles.chipBadgeTrend]}>
+                        <Text style={[styles.chipBadgeText, badge.isHot ? styles.chipBadgeHotText : styles.chipBadgeTrendText]}>
+                          {badge.label}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.chipName} numberOfLines={2}>{trend.name}</Text>
+                    <Text style={styles.chipViews}>{formatViews(trend.views)} lượt xem</Text>
+                    <Text style={[styles.chipGrowth, { color: trend.growth >= 0 ? Colors.success : Colors.danger }]}>
+                      {trend.growth >= 0 ? '▲' : '▼'} {formatGrowth(trend.growth)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
         </Animated.ScrollView>
 
         {/* Top products section */}
@@ -127,29 +138,35 @@ export function HomeScreen() {
           <SectionHeader title="📦 Sản Phẩm Bán Chạy" />
         </Animated.View>
 
-        {TOP_PRODUCTS.map((product, index) => (
-          <Animated.View
-            key={product.name}
-            entering={FadeInUp.delay(300 + index * 80).duration(400)}
-            style={styles.listItemWrapper}
-          >
-            <TouchableOpacity style={styles.listItem} activeOpacity={0.7}>
-              <View style={[styles.liIcon, { backgroundColor: product.bg }]}>
-                <Text style={styles.liEmoji}>{product.icon}</Text>
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <View key={i} style={styles.listItemWrapper}>
+                <SkeletonCard />
               </View>
-              <View style={styles.liInfo}>
-                <Text style={styles.liName} numberOfLines={1}>{product.name}</Text>
-                <Text style={styles.liSub}>{product.sub}</Text>
-              </View>
-              <View style={styles.liRight}>
-                <Text style={styles.liVal}>{product.val}</Text>
-                <Text style={[styles.liChg, { color: product.up ? Colors.success : Colors.danger }]}>
-                  {product.up ? '▲' : '▼'} {product.growth}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        ))}
+            ))
+          : trends.map((trend, index) => (
+              <Animated.View
+                key={trend.id}
+                entering={FadeInUp.delay(300 + index * 80).duration(400)}
+                style={styles.listItemWrapper}
+              >
+                <TouchableOpacity style={styles.listItem} activeOpacity={0.7}>
+                  <View style={[styles.liIcon, { backgroundColor: trend.bgColor ?? Colors.primaryBg }]}>
+                    <Text style={styles.liEmoji}>{trend.icon ?? '📦'}</Text>
+                  </View>
+                  <View style={styles.liInfo}>
+                    <Text style={styles.liName} numberOfLines={1}>{trend.name}</Text>
+                    <Text style={styles.liSub}>{formatViews(trend.videoCount)} video đang dùng</Text>
+                  </View>
+                  <View style={styles.liRight}>
+                    <Text style={styles.liVal}>{formatCurrency(trend.price ?? 0)}</Text>
+                    <Text style={[styles.liChg, { color: trend.growth >= 0 ? Colors.success : Colors.danger }]}>
+                      {trend.growth >= 0 ? '▲' : '▼'} {formatGrowth(trend.growth)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
       </ScrollView>
     </View>
   );
@@ -370,6 +387,9 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     ...Shadow.cardSm,
   },
+  trendChipSkeleton: {
+    marginRight: Spacing.sm,
+  },
   chipTop: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -414,7 +434,6 @@ const styles = StyleSheet.create({
   chipGrowth: {
     fontSize: FontSize.caption,
     fontWeight: FontWeight.semibold,
-    color: Colors.success,
   },
 
   // Product list
