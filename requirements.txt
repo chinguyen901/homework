@@ -1,0 +1,121 @@
+# ============================================================
+# TikTok Auto Center — Setup Requirements
+# ============================================================
+# Dự án: React Native (Expo SDK 56) + TypeScript
+# Chạy trên: Android & iOS qua Expo Go (không cần build native)
+# ============================================================
+
+
+# ────────────────────────────────────────
+# 1. SYSTEM REQUIREMENTS (cài trước)
+# ────────────────────────────────────────
+
+Node.js   >= 18.x   (đang dùng: v20.20.2)  https://nodejs.org
+npm       >= 10.x   (đang dùng: v11.16.0)  — đi kèm Node.js
+Git       any                               https://git-scm.com
+
+# Kiểm tra bằng lệnh:
+#   node --version
+#   npm --version
+
+
+# ────────────────────────────────────────
+# 2. EXPO GO (cài trên điện thoại)
+# ────────────────────────────────────────
+
+Android:  https://play.google.com/store/apps/details?id=host.exp.exponent
+iOS:      https://apps.apple.com/app/expo-go/id982107779
+
+# Hoặc dùng Emulator:
+#   Android: Android Studio + AVD Manager
+#   iOS:     Xcode (chỉ macOS)
+
+
+# ────────────────────────────────────────
+# 3. CLONE & INSTALL
+# ────────────────────────────────────────
+
+# Clone project
+git clone <repo-url>
+cd <project-folder>
+
+# Cài tất cả npm packages (từ package.json — ~590 packages)
+npm install
+
+
+# ────────────────────────────────────────
+# 4. ENVIRONMENT VARIABLES
+# ────────────────────────────────────────
+
+# Tạo file .env.local tại root project (không commit file này):
+
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+EXPO_PUBLIC_RAPIDAPI_KEY=your-rapidapi-key
+EXPO_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
+
+# Lưu ý:
+# - Chưa có keys? App vẫn chạy được với mock data (Phase 5 chưa implement)
+# - Keys lấy từ: Supabase Dashboard / RapidAPI / Firebase Console
+# - Prefix EXPO_PUBLIC_ bắt buộc để Expo nhận env var phía client
+
+
+# ────────────────────────────────────────
+# 5. CHẠY APP
+# ────────────────────────────────────────
+
+# Khởi động dev server
+npx expo start
+
+# → Quét QR code bằng Expo Go trên điện thoại
+# → Hoặc nhấn 'a' để mở Android emulator
+# → Hoặc nhấn 'i' để mở iOS simulator (macOS only)
+
+# Chỉ Android:
+npx expo start --android
+
+# Chỉ iOS:
+npx expo start --ios
+
+
+# ────────────────────────────────────────
+# 6. KIỂM TRA CODE
+# ────────────────────────────────────────
+
+# TypeScript type check (không compile, chỉ kiểm tra lỗi)
+npx tsc --noEmit
+
+# Lint
+npx expo lint
+
+
+# ────────────────────────────────────────
+# 7. CẤU TRÚC QUAN TRỌNG
+# ────────────────────────────────────────
+
+App.tsx                  ← Entry point Expo
+src/app/index.tsx        ← Providers (QueryClient, SafeArea, GestureHandler)
+src/app/navigation/      ← TabNavigator (5 tab) + RootNavigator
+src/screens/             ← Home, Trending, Hashtag, Analytics, Profile
+src/components/ui/       ← Badge, Card, Button, Skeleton, StatPill
+src/components/layout/   ← AppHeader (gradient), SafeWrapper
+src/utils/theme.ts       ← Design tokens (màu sắc, typography, spacing)
+src/utils/constants.ts   ← App-wide constants
+src/types/               ← TypeScript interfaces
+
+# Path alias: @/* → src/*  (cấu hình trong tsconfig.json + babel.config.js)
+# Ví dụ: import { Colors } from '@/utils/theme'
+
+
+# ────────────────────────────────────────
+# 8. TRẠNG THÁI DỰ ÁN
+# ────────────────────────────────────────
+
+✅ Phase 1: Expo SDK 56 + TypeScript + dependencies
+✅ Phase 2: Design system (theme.ts) + shared components
+✅ Phase 3: Navigation (5-tab + Stack)
+✅ Phase 4: 5 screens đầy đủ UI (mock data)
+⬜ Phase 5: Backend — Supabase + Firebase Auth + React Query hooks
+⬜ Phase 6: Polish — loading states, animations, monetization gates
+
+# Chi tiết: xem CLAUDE.md

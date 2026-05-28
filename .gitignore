@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+
+# Expo
+.expo
+dist
+build
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build
+
+# Environment variables — KHÔNG commit file này
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.*
+*.log
+
+# Screenshots (tạo lại bằng lệnh)
+screenshot_v*.png
+tab_*.png

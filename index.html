@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TikTok Auto Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --primary: #7C3AED;
+    --primary-dark: #5B21B6;
+    --primary-light: #A78BFA;
+    --primary-bg: #EDE9FE;
+    --bg: #F8F7FF;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-sub: #6B7280;
+    --success: #10B981;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --border: #E5E7EB;
+    --shadow: 0 4px 20px rgba(124,58,237,0.10);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #1a0533;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ─── Phone Frame ─── */
+  .phone-wrap {
+    position: relative;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), inset 0 0 0 2px rgba(255,255,255,0.15);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  /* Status bar time */
+  .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  .status-bar.dark { color: var(--text); }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; }
+  .status-bar .icons svg { width: 14px; height: 14px; }
+
+  /* ─── Screen container ─── */
+  .screen-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: none;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { display: block; }
+
+  /* ─── Bottom Nav ─── */
+  .bottom-nav {
+    height: 72px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 50;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 12px;
+  }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; color: var(--text-sub); }
+  .nav-item.active span { color: var(--primary); }
+  .nav-item.active svg { color: var(--primary); }
+  .nav-item:not(.active) svg { color: var(--text-sub); }
+
+  /* ─── Gradient header ─── */
+  .grad-header {
+    background: linear-gradient(145deg, #7C3AED 0%, #5B21B6 60%, #4C1D95 100%);
+    padding: 0 20px 20px;
+    position: relative;
+  }
+  .grad-header::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    bottom: -60px; right: -40px;
+  }
+  .grad-header::before {
+    content: '';
+    position: absolute;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+    top: 20px; left: -30px;
+  }
+
+  /* ─── HOME SCREEN ─── */
+  .home-header { padding: 8px 0 12px; }
+  .home-greeting { display: flex; align-items: center; justify-content: space-between; }
+  .greeting-text h3 { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 400; }
+  .greeting-text h2 { font-size: 18px; color: #fff; font-weight: 700; margin-top: 2px; }
+
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A78BFA, #7C3AED);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: #fff;
+    position: relative;
+  }
+  .avatar .dot {
+    position: absolute; top: 0; right: 0;
+    width: 11px; height: 11px;
+    background: #10B981;
+    border-radius: 50%;
+    border: 2px solid #5B21B6;
+  }
+
+  /* Big stats card */
+  .stats-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.18);
+    margin-top: 2px;
+  }
+  .stats-card .label { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+  .stats-card .big-num { font-size: 32px; font-weight: 800; color: #fff; line-height: 1.1; margin: 4px 0 10px; letter-spacing: -1px; }
+  .stats-card .big-num span { font-size: 18px; font-weight: 600; vertical-align: top; margin-top: 5px; display: inline-block; }
+  .stats-row { display: flex; gap: 12px; }
+  .stat-pill {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .stat-pill .sp-label { font-size: 9px; color: rgba(255,255,255,0.6); font-weight: 500; margin-bottom: 3px; }
+  .stat-pill .sp-val { font-size: 14px; font-weight: 700; color: #fff; }
+  .stat-pill .sp-chg { font-size: 10px; font-weight: 500; margin-top: 2px; }
+  .sp-chg.up { color: #6EE7B7; }
+  .sp-chg.dn { color: #FCA5A5; }
+
+  /* Quick actions */
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px 4px;
+  }
+  .qa-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 6px;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .qa-btn:active { transform: scale(0.96); }
+  .qa-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .qa-btn span { font-size: 9.5px; font-weight: 600; color: var(--text); text-align: center; line-height: 1.3; }
+
+  /* Section title */
+  .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 10px;
+  }
+  .section-title h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+  .section-title a { font-size: 12px; color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; }
+
+  /* Trend card horizontal scroll */
+  .trend-scroll {
+    display: flex;
+    gap: 12px;
+    padding: 0 20px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .trend-scroll::-webkit-scrollbar { display: none; }
+
+  .trend-chip {
+    flex-shrink: 0;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+    min-width: 140px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 1px solid transparent;
+  }
+  .trend-chip:active { transform: scale(0.97); }
+  .trend-chip.hot { border-color: rgba(124,58,237,0.2); }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .tc-icon { font-size: 22px; }
+  .tc-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--primary-bg);
+    color: var(--primary);
+  }
+  .tc-badge.fire { background: #FEF3C7; color: #D97706; }
+  .tc-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .tc-sub { font-size: 11px; color: var(--text-sub); }
+  .tc-growth { font-size: 12px; font-weight: 700; color: var(--success); margin-top: 6px; }
+
+  /* List items */
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--card);
+    margin: 0 20px 8px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .list-item:active { transform: scale(0.98); }
+  .li-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .li-info { flex: 1; min-width: 0; }
+  .li-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .li-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+  .li-right { text-align: right; flex-shrink: 0; }
+  .li-val { font-size: 14px; font-weight: 700; color: var(--text); }
+  .li-chg { font-size: 11px; font-weight: 600; margin-top: 2px; }
+  .li-chg.up { color: var(--success); }
+  .li-chg.dn { color: var(--danger); }
+
+  /* ─── TRENDING SCREEN ─── */
+  .screen-header {
+    padding: 14px 20px 16px;
+    background: var(--bg);
+  }
+  .screen-header h2 { font-size: 22px; font-weight: 800; color: var(--text); }
+  .screen-header p { font-size: 13px; color: var(--text-sub); margin-top: 3px; }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 0 14px;
+    height: 46px;
+    margin: 0 20px 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .search-bar svg { width: 18px; height: 18px; color: var(--text-sub); flex-shrink: 0; }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: transparent;
+  }
+  .search-bar input::placeholder { color: var(--text-sub); }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--card);
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+  }
+  .filter-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* Product card */
+  .product-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 0 20px 10px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 1px solid var(--border);
+  }
+  .product-card:active { transform: scale(0.98); }
+  .pc-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .pc-img {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .pc-info { flex: 1; }
+  .pc-name { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .pc-cat { font-size: 11px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
+  .pc-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+  .pc-stats { display: flex; gap: 8px; }
+  .pc-stat {
+    flex: 1;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .pc-stat .ps-val { font-size: 13px; font-weight: 700; color: var(--text); }
+  .pc-stat .ps-lbl { font-size: 10px; color: var(--text-sub); margin-top: 2px; }
+  .rank-badge {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* ─── HASHTAG SCREEN ─── */
+  .hashtag-row {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 0 20px 8px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .hashtag-row:active { transform: scale(0.98); }
+  .hr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .hr-left { display: flex; align-items: center; gap: 10px; }
+  .hr-rank { font-size: 18px; font-weight: 800; color: var(--primary-light); width: 28px; }
+  .hr-tag { font-size: 14px; font-weight: 700; color: var(--text); }
+  .hr-views { font-size: 11px; color: var(--text-sub); }
+  .hr-chg { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+  .hr-chg.up { color: var(--success); background: #D1FAE5; }
+  .hr-chg.new { color: var(--primary); background: var(--primary-bg); }
+  .hr-bar-bg { height: 4px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .hr-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary-light), var(--primary)); transition: width 1.2s ease; }
+
+  /* ─── ANALYTICS SCREEN ─── */
+  .analytics-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px;
+    margin: 0 20px 12px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .ac-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .ac-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .tab-pills { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; gap: 2px; }
+  .tab-pill {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-pill.active { background: var(--card); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+  /* Bar chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    padding: 0 4px;
+  }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+  .bar {
+    width: 10px;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height 1.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .bar.a { background: linear-gradient(180deg, var(--primary-light), var(--primary)); }
+  .bar.b { background: linear-gradient(180deg, #C4B5FD, #A78BFA); opacity: 0.5; }
+  .bar-lbl { font-size: 9px; color: var(--text-sub); font-weight: 500; }
+
+  /* Summary grid */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 12px; }
+  .summary-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sc-icon { font-size: 22px; margin-bottom: 8px; }
+  .sc-val { font-size: 18px; font-weight: 800; color: var(--text); }
+  .sc-lbl { font-size: 11px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
+  .sc-chg { font-size: 11px; font-weight: 600; margin-top: 4px; }
+
+  /* ─── PROFILE SCREEN ─── */
+  .profile-header {
+    background: linear-gradient(145deg, #7C3AED, #4C1D95);
+    padding: 20px 20px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .profile-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A78BFA, #7C3AED);
+    border: 3px solid rgba(255,255,255,0.4);
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; color: #fff;
+  }
+  .profile-name { font-size: 18px; font-weight: 700; color: #fff; }
+  .profile-role { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+  .plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 10px;
+  }
+
+  .profile-stats {
+    display: flex;
+    background: var(--card);
+    border-radius: 16px;
+    margin: -16px 20px 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .ps-item { flex: 1; padding: 16px 8px; text-align: center; position: relative; }
+  .ps-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 20%; bottom: 20%;
+    width: 1px;
+    background: var(--border);
+  }
+  .ps-num { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .ps-lbl { font-size: 10px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
+
+  .menu-section { padding: 0 20px; margin-bottom: 12px; }
+  .menu-section-title { font-size: 11px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; padding: 0 4px; }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 14px;
+    background: var(--card);
+    border-radius: 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .menu-item:active { transform: scale(0.98); }
+  .mi-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .mi-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+  .mi-arrow { font-size: 16px; color: var(--text-sub); }
+  .mi-badge {
+    font-size: 10px; font-weight: 700;
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  /* ─── Scroll animations — CSS keyframes (no JS dependency) ─── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  /* Elements inside gradient header: no Y shift to avoid overflow clip */
+  .grad-header .animate-in {
+    animation-name: fadeIn;
+  }
+
+  /* ─── Loading skeleton ─── */
+  .skeleton { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+  /* ─── Notification dot ─── */
+  .notif-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; position: absolute; top: -1px; right: -1px; border: 1.5px solid #fff; }
+
+  /* Pulse animation for live badge */
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #FEF2F2;
+    color: var(--danger);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .live-dot { width: 6px; height: 6px; background: var(--danger); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+
+  /* ─── Responsive for real mobile ─── */
+  @media (max-width: 430px) {
+    body { padding: 0; background: var(--bg); align-items: flex-start; }
+    .phone {
+      width: 100%; height: 100dvh;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .phone::before { display: none; }
+    .status-bar { display: none; }
+    .phone-wrap { gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-wrap">
+
+  <!-- ═══════════════ PHONE 1 ═══════════════ -->
+  <div class="phone">
+    <!-- Status bar -->
+    <div class="status-bar" id="status-color-1" style="background:linear-gradient(145deg,#7C3AED,#5B21B6)">
+      <span style="padding-left:10px">9:41</span>
+      <div class="icons" style="padding-right:8px">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen container -->
+    <div class="screen-container">
+
+      <!-- ── HOME ── -->
+      <div class="screen active" id="s-home">
+        <div class="grad-header" style="padding-top:8px">
+          <div class="home-header">
+            <div class="home-greeting">
+              <div class="greeting-text">
+                <h3>Xin chào 👋</h3>
+                <h2>Nguyen Chi</h2>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div style="position:relative;cursor:pointer">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  <div class="notif-dot" style="border-color:#5B21B6"></div>
+                </div>
+                <div class="avatar">N<div class="dot"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-card animate-in">
+            <div class="label">Tổng Trending Đang Theo Dõi</div>
+            <div class="big-num"><span>🔥</span> 11,356</div>
+            <div class="stats-row">
+              <div class="stat-pill">
+                <div class="sp-label">Hashtag Hot</div>
+                <div class="sp-val">245</div>
+                <div class="sp-chg up">▲ +18 hôm nay</div>
+              </div>
+              <div class="stat-pill">
+                <div class="sp-label">Sản Phẩm Trending</div>
+                <div class="sp-val">1,204</div>
+                <div class="sp-chg up">▲ +89 mới</div>
+              </div>
+              <div class="stat-pill">
+                <div class="sp-label">Video Viral</div>
+                <div class="sp-val">9.9K</div>
+                <div class="sp-chg dn">▼ -2.1%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions animate-in" style="transition-delay:0.1s">
+          <div class="qa-btn">
+            <div class="qa-icon" style="background:#EDE9FE">🔍</div>
+            <span>Tìm Xu Hướng</span>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon" style="background:#D1FAE5">📊</div>
+            <span>Phân Tích</span>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon" style="background:#FEF3C7">🏷️</div>
+            <span>Hashtag</span>
+          </div>
+          <div class="qa-btn">
+            <div class="qa-icon" style="background:#FEE2E2">⚡</div>
+            <span>Cảnh Báo</span>
+          </div>
+        </div>
+
+        <!-- Trending today -->
+        <div class="section-title animate-in" style="transition-delay:0.15s">
+          <h3>🔥 Trending Hôm Nay</h3>
+          <a>Xem tất cả</a>
+        </div>
+        <div class="trend-scroll animate-in" style="transition-delay:0.2s">
+          <div class="trend-chip hot">
+            <div class="tc-top"><span class="tc-icon">👗</span><span class="tc-badge fire">🔥 Hot</span></div>
+            <div class="tc-name">Thời Trang Hè</div>
+            <div class="tc-sub">2.4M lượt xem</div>
+            <div class="tc-growth">▲ +127%</div>
+          </div>
+          <div class="trend-chip">
+            <div class="tc-top"><span class="tc-icon">💄</span><span class="tc-badge">Tăng</span></div>
+            <div class="tc-name">Mỹ Phẩm Hàn</div>
+            <div class="tc-sub">1.8M lượt xem</div>
+            <div class="tc-growth">▲ +89%</div>
+          </div>
+          <div class="trend-chip">
+            <div class="tc-top"><span class="tc-icon">🍜</span><span class="tc-badge fire">🔥 Hot</span></div>
+            <div class="tc-name">Đồ Ăn Vặt</div>
+            <div class="tc-sub">3.1M lượt xem</div>
+            <div class="tc-growth">▲ +203%</div>
+          </div>
+          <div class="trend-chip">
+            <div class="tc-top"><span class="tc-icon">📱</span><span class="tc-badge">Mới</span></div>
+            <div class="tc-name">Phụ Kiện Phone</div>
+            <div class="tc-sub">990K lượt xem</div>
+            <div class="tc-growth">▲ +45%</div>
+          </div>
+        </div>
+
+        <!-- Top products -->
+        <div class="section-title animate-in" style="transition-delay:0.25s">
+          <h3>📦 Sản Phẩm Bán Chạy</h3>
+          <a>Xem tất cả</a>
+        </div>
+
+        <div class="list-item animate-in" style="transition-delay:0.3s">
+          <div class="li-icon" style="background:#EDE9FE; font-size:22px">👗</div>
+          <div class="li-info">
+            <div class="li-name">Váy Maxi Boho Mùa Hè</div>
+            <div class="li-sub">12,450 video đang dùng</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val">245k</div>
+            <div class="li-chg up">▲ +127%</div>
+          </div>
+        </div>
+
+        <div class="list-item animate-in" style="transition-delay:0.35s">
+          <div class="li-icon" style="background:#D1FAE5; font-size:22px">💄</div>
+          <div class="li-info">
+            <div class="li-name">Son Tint Hàn Quốc 3CE</div>
+            <div class="li-sub">8,900 video đang dùng</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val">189k</div>
+            <div class="li-chg up">▲ +89%</div>
+          </div>
+        </div>
+
+        <div class="list-item animate-in" style="transition-delay:0.4s">
+          <div class="li-icon" style="background:#FEF3C7; font-size:22px">🍜</div>
+          <div class="li-info">
+            <div class="li-name">Mì Cay Buldak Hàn</div>
+            <div class="li-sub">21,000 video đang dùng</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val">55k</div>
+            <div class="li-chg up">▲ +203%</div>
+          </div>
+        </div>
+
+        <div class="list-item animate-in" style="transition-delay:0.45s">
+          <div class="li-icon" style="background:#FEE2E2; font-size:22px">🏠</div>
+          <div class="li-info">
+            <div class="li-name">Đèn LED Trang Trí Phòng</div>
+            <div class="li-sub">5,670 video đang dùng</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val">120k</div>
+            <div class="li-chg dn">▼ -5%</div>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+
+      <!-- ── TRENDING ── -->
+      <div class="screen" id="s-trend">
+        <div style="background:linear-gradient(145deg,#7C3AED,#5B21B6);padding:14px 20px 20px">
+          <h2 style="font-size:20px;font-weight:800;color:#fff">Trending Products</h2>
+          <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px">Cập nhật lúc 09:41 · <span class="live-badge"><span class="live-dot"></span>LIVE</span></p>
+        </div>
+
+        <div style="height:14px;background:var(--bg)"></div>
+
+        <div class="search-bar animate-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Tìm sản phẩm, niche..." />
+        </div>
+
+        <div class="filter-row animate-in" style="transition-delay:0.05s">
+          <div class="filter-chip active">Tất cả</div>
+          <div class="filter-chip">Thời trang</div>
+          <div class="filter-chip">Mỹ phẩm</div>
+          <div class="filter-chip">Đồ ăn</div>
+          <div class="filter-chip">Gia dụng</div>
+          <div class="filter-chip">Phụ kiện</div>
+        </div>
+
+        <div class="product-card animate-in" style="transition-delay:0.1s">
+          <div class="pc-top">
+            <div class="rank-badge" style="background:#FEF3C7;color:#D97706">#1</div>
+            <div class="pc-img" style="background:#EDE9FE">👗</div>
+            <div class="pc-info">
+              <div class="pc-name">Váy Maxi Boho Mùa Hè 2024</div>
+              <div class="pc-cat">Thời trang nữ</div>
+              <div class="pc-price">245.000đ</div>
+            </div>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="ps-val">12.4K</div><div class="ps-lbl">Video</div></div>
+            <div class="pc-stat"><div class="ps-val">2.4M</div><div class="ps-lbl">Lượt xem</div></div>
+            <div class="pc-stat"><div class="ps-val" style="color:var(--success)">+127%</div><div class="ps-lbl">Tăng trưởng</div></div>
+          </div>
+        </div>
+
+        <div class="product-card animate-in" style="transition-delay:0.15s">
+          <div class="pc-top">
+            <div class="rank-badge" style="background:#F3F4F6;color:#6B7280">#2</div>
+            <div class="pc-img" style="background:#D1FAE5">💄</div>
+            <div class="pc-info">
+              <div class="pc-name">Son Tint Hàn Quốc 3CE #Rose</div>
+              <div class="pc-cat">Mỹ phẩm</div>
+              <div class="pc-price">189.000đ</div>
+            </div>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="ps-val">8.9K</div><div class="ps-lbl">Video</div></div>
+            <div class="pc-stat"><div class="ps-val">1.8M</div><div class="ps-lbl">Lượt xem</div></div>
+            <div class="pc-stat"><div class="ps-val" style="color:var(--success)">+89%</div><div class="ps-lbl">Tăng trưởng</div></div>
+          </div>
+        </div>
+
+        <div class="product-card animate-in" style="transition-delay:0.2s">
+          <div class="pc-top">
+            <div class="rank-badge" style="background:#F3F4F6;color:#6B7280">#3</div>
+            <div class="pc-img" style="background:#FEF3C7">🍜</div>
+            <div class="pc-info">
+              <div class="pc-name">Mì Cay Buldak 2x Spicy</div>
+              <div class="pc-cat">Đồ ăn & thức uống</div>
+              <div class="pc-price">55.000đ</div>
+            </div>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="ps-val">21K</div><div class="ps-lbl">Video</div></div>
+            <div class="pc-stat"><div class="ps-val">3.1M</div><div class="ps-lbl">Lượt xem</div></div>
+            <div class="pc-stat"><div class="ps-val" style="color:var(--success)">+203%</div><div class="ps-lbl">Tăng trưởng</div></div>
+          </div>
+        </div>
+
+        <div class="product-card animate-in" style="transition-delay:0.25s">
+          <div class="pc-top">
+            <div class="rank-badge" style="background:#F3F4F6;color:#6B7280">#4</div>
+            <div class="pc-img" style="background:#E0E7FF">📱</div>
+            <div class="pc-info">
+              <div class="pc-name">Ốp Lưng Magsafe iPhone 15</div>
+              <div class="pc-cat">Phụ kiện điện tử</div>
+              <div class="pc-price">120.000đ</div>
+            </div>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="ps-val">5.6K</div><div class="ps-lbl">Video</div></div>
+            <div class="pc-stat"><div class="ps-val">990K</div><div class="ps-lbl">Lượt xem</div></div>
+            <div class="pc-stat"><div class="ps-val" style="color:var(--success)">+45%</div><div class="ps-lbl">Tăng trưởng</div></div>
+          </div>
+        </div>
+
+        <div class="product-card animate-in" style="transition-delay:0.3s">
+          <div class="pc-top">
+            <div class="rank-badge" style="background:#F3F4F6;color:#6B7280">#5</div>
+            <div class="pc-img" style="background:#FEE2E2">🏠</div>
+            <div class="pc-info">
+              <div class="pc-name">Đèn LED RGB Trang Trí Phòng</div>
+              <div class="pc-cat">Đồ gia dụng</div>
+              <div class="pc-price">85.000đ</div>
+            </div>
+          </div>
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="ps-val">4.2K</div><div class="ps-lbl">Video</div></div>
+            <div class="pc-stat"><div class="ps-val">780K</div><div class="ps-lbl">Lượt xem</div></div>
+            <div class="pc-stat"><div class="ps-val" style="color:var(--danger)">-5%</div><div class="ps-lbl">Tăng trưởng</div></div>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+
+      <!-- ── HASHTAGS ── -->
+      <div class="screen" id="s-hash">
+        <div style="background:linear-gradient(145deg,#7C3AED,#5B21B6);padding:14px 20px 20px">
+          <h2 style="font-size:20px;font-weight:800;color:#fff">Hashtag Analyzer</h2>
+          <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px">Top hashtag đang viral trên TikTok</p>
+        </div>
+
+        <div style="height:14px;background:var(--bg)"></div>
+
+        <div class="search-bar animate-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.12 5.08A7 7 0 1 1 5.07 10.12"/></svg>
+          <input type="text" placeholder="#hashtag_cần_tìm..." />
+        </div>
+
+        <div style="padding:0 20px 12px" class="animate-in" style="transition-delay:0.05s">
+          <div style="display:flex;gap:8px">
+            <div class="filter-chip active" style="flex:1;text-align:center">Hôm nay</div>
+            <div class="filter-chip" style="flex:1;text-align:center">Tuần này</div>
+            <div class="filter-chip" style="flex:1;text-align:center">Tháng này</div>
+          </div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.1s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">01</span>
+              <div><div class="hr-tag">#vaymaxiboho</div><div class="hr-views">24.5M lượt xem</div></div>
+            </div>
+            <span class="hr-chg up">▲ +127%</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:92%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.15s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">02</span>
+              <div><div class="hr-tag">#mypchamhangquoc</div><div class="hr-views">18.2M lượt xem</div></div>
+            </div>
+            <span class="hr-chg up">▲ +89%</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:75%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.2s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">03</span>
+              <div><div class="hr-tag">#amthucviral</div><div class="hr-views">31.0M lượt xem</div></div>
+            </div>
+            <span class="hr-chg new">✦ Mới bùng</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.25s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">04</span>
+              <div><div class="hr-tag">#trangtriphong</div><div class="hr-views">12.8M lượt xem</div></div>
+            </div>
+            <span class="hr-chg up">▲ +62%</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:58%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.3s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">05</span>
+              <div><div class="hr-tag">#affiliateviet</div><div class="hr-views">9.4M lượt xem</div></div>
+            </div>
+            <span class="hr-chg up">▲ +41%</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:45%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.35s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">06</span>
+              <div><div class="hr-tag">#tiktokviral2024</div><div class="hr-views">8.1M lượt xem</div></div>
+            </div>
+            <span class="hr-chg up">▲ +35%</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:38%"></div></div>
+        </div>
+
+        <div class="hashtag-row animate-in" style="transition-delay:0.4s">
+          <div class="hr-top">
+            <div class="hr-left">
+              <span class="hr-rank">07</span>
+              <div><div class="hr-tag">#shopviet</div><div class="hr-views">6.5M lượt xem</div></div>
+            </div>
+            <span class="hr-chg new">✦ Mới</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill" style="width:28%"></div></div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+
+      <!-- ── ANALYTICS ── -->
+      <div class="screen" id="s-analytics">
+        <div style="background:linear-gradient(145deg,#7C3AED,#5B21B6);padding:14px 20px 20px">
+          <h2 style="font-size:20px;font-weight:800;color:#fff">Analytics</h2>
+          <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px">Biểu đồ xu hướng 7 ngày qua</p>
+        </div>
+
+        <div style="height:14px;background:var(--bg)"></div>
+
+        <!-- Summary grid -->
+        <div class="summary-grid animate-in">
+          <div class="summary-card">
+            <div class="sc-icon">📈</div>
+            <div class="sc-val" id="cnt-views">0</div>
+            <div class="sc-lbl">Tổng lượt xem</div>
+            <div class="sc-chg" style="color:var(--success)">▲ +23.4%</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">🏷️</div>
+            <div class="sc-val" id="cnt-hash">0</div>
+            <div class="sc-lbl">Hashtag trending</div>
+            <div class="sc-chg" style="color:var(--success)">▲ +18 mới</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">📦</div>
+            <div class="sc-val" id="cnt-prod">0</div>
+            <div class="sc-lbl">Sản phẩm hot</div>
+            <div class="sc-chg" style="color:var(--warning)">→ Ổn định</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">🎬</div>
+            <div class="sc-val" id="cnt-vid">0</div>
+            <div class="sc-lbl">Video viral</div>
+            <div class="sc-chg" style="color:var(--danger)">▼ -2.1%</div>
+          </div>
+        </div>
+
+        <!-- Bar chart -->
+        <div class="analytics-card animate-in" style="transition-delay:0.1s">
+          <div class="ac-header">
+            <span class="ac-title">Lượt xem / Ngày</span>
+            <div class="tab-pills">
+              <div class="tab-pill active">7N</div>
+              <div class="tab-pill">30N</div>
+              <div class="tab-pill">3T</div>
+            </div>
+          </div>
+          <div class="bar-chart" id="barChart">
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b0" style="height:0px"></div><div class="bar b" id="b0b" style="height:0px"></div></div><div class="bar-lbl">T2</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b1" style="height:0px"></div><div class="bar b" id="b1b" style="height:0px"></div></div><div class="bar-lbl">T3</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b2" style="height:0px"></div><div class="bar b" id="b2b" style="height:0px"></div></div><div class="bar-lbl">T4</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b3" style="height:0px"></div><div class="bar b" id="b3b" style="height:0px"></div></div><div class="bar-lbl">T5</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b4" style="height:0px"></div><div class="bar b" id="b4b" style="height:0px"></div></div><div class="bar-lbl">T6</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b5" style="height:0px"></div><div class="bar b" id="b5b" style="height:0px"></div></div><div class="bar-lbl">T7</div></div>
+            <div class="bar-group"><div class="bar-wrap"><div class="bar a" id="b6" style="height:0px"></div><div class="bar b" id="b6b" style="height:0px"></div></div><div class="bar-lbl">CN</div></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:var(--primary)"></div><span style="font-size:11px;color:var(--text-sub);font-weight:500">Tuần này</span></div>
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:#C4B5FD;opacity:0.7"></div><span style="font-size:11px;color:var(--text-sub);font-weight:500">Tuần trước</span></div>
+          </div>
+        </div>
+
+        <!-- Top niche -->
+        <div class="analytics-card animate-in" style="transition-delay:0.2s">
+          <div class="ac-header"><span class="ac-title">Top Niche Tháng Này</span></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">👗 Thời trang</span>
+                <span style="font-size:13px;font-weight:700;color:var(--primary)">38%</span>
+              </div>
+              <div style="height:6px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="width:38%;height:100%;background:linear-gradient(90deg,var(--primary-light),var(--primary));border-radius:4px;transition:width 1.2s ease"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">💄 Mỹ phẩm</span>
+                <span style="font-size:13px;font-weight:700;color:var(--primary)">27%</span>
+              </div>
+              <div style="height:6px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="width:27%;height:100%;background:linear-gradient(90deg,#6EE7B7,#10B981);border-radius:4px;transition:width 1.2s ease"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">🍜 Đồ ăn</span>
+                <span style="font-size:13px;font-weight:700;color:var(--primary)">22%</span>
+              </div>
+              <div style="height:6px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="width:22%;height:100%;background:linear-gradient(90deg,#FCD34D,#F59E0B);border-radius:4px;transition:width 1.2s ease"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">📱 Phụ kiện</span>
+                <span style="font-size:13px;font-weight:700;color:var(--primary)">13%</span>
+              </div>
+              <div style="height:6px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="width:13%;height:100%;background:linear-gradient(90deg,#FCA5A5,#EF4444);border-radius:4px;transition:width 1.2s ease"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div class="screen" id="s-profile">
+        <div class="profile-header">
+          <div class="profile-avatar">N</div>
+          <div class="profile-name">Nguyen Chi</div>
+          <div class="profile-role">Affiliate Marketer · TikTok Shop</div>
+          <div style="margin-top:8px"><span class="plan-badge">⚡ Pro Plan · 99k/tháng</span></div>
+        </div>
+
+        <div class="profile-stats animate-in">
+          <div class="ps-item"><div class="ps-num">245</div><div class="ps-lbl">Hashtag</div></div>
+          <div class="ps-item"><div class="ps-num">1.2K</div><div class="ps-lbl">Sản phẩm</div></div>
+          <div class="ps-item"><div class="ps-num">18</div><div class="ps-lbl">Cảnh báo</div></div>
+        </div>
+
+        <div class="menu-section animate-in" style="transition-delay:0.1s">
+          <div class="menu-section-title">Tài khoản</div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#EDE9FE">⚡</div>
+            <span class="mi-label">Nâng cấp Business</span>
+            <span class="mi-badge">HOT</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#D1FAE5">🔔</div>
+            <span class="mi-label">Cảnh báo xu hướng</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#FEF3C7">🎯</div>
+            <span class="mi-label">Niche quan tâm</span>
+            <span class="mi-arrow">›</span>
+          </div>
+        </div>
+
+        <div class="menu-section animate-in" style="transition-delay:0.15s">
+          <div class="menu-section-title">Cài đặt</div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#E0E7FF">📊</div>
+            <span class="mi-label">Xuất báo cáo CSV</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#FEE2E2">🔑</div>
+            <span class="mi-label">API Key</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#F3F4F6">⚙️</div>
+            <span class="mi-label">Cài đặt thông báo</span>
+            <span class="mi-arrow">›</span>
+          </div>
+        </div>
+
+        <div class="menu-section animate-in" style="transition-delay:0.2s">
+          <div class="menu-section-title">Hỗ trợ</div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#D1FAE5">💬</div>
+            <span class="mi-label">Liên hệ hỗ trợ</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="mi-icon" style="background:#FEF3C7">📖</div>
+            <span class="mi-label">Hướng dẫn sử dụng</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item" style="border:none">
+            <div class="mi-icon" style="background:#FEE2E2">🚪</div>
+            <span class="mi-label" style="color:var(--danger)">Đăng xuất</span>
+            <span class="mi-arrow" style="color:var(--danger)">›</span>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+
+    </div><!-- /screen-container -->
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('home',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('trend',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+        <span>Trending</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('hash',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4v5.17c0 .53.21 1.04.59 1.41L13 19l7-7-9.41-9.41zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z"/></svg>
+        <span>Hashtag</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('analytics',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        <span>Analytics</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('profile',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-wrap -->
+
+<script>
+  // ── Tab switching ──
+  function switchTab(id, el) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('s-' + id).classList.add('active');
+    el.classList.add('active');
+
+    // Update status bar color
+    const isColored = ['home','trend','hash','analytics','profile'].includes(id);
+    const sb = document.getElementById('status-color-1');
+    if (sb) sb.style.background = 'linear-gradient(145deg,#7C3AED,#5B21B6)';
+
+    // Re-trigger CSS animations on screen enter
+    resetAnimations(id);
+
+    // Animate bars when analytics tab opened
+    if (id === 'analytics') {
+      animateBars();
+      animateCounters();
+    }
+  }
+
+  // ── Reset animations when switching tabs so they replay ──
+  function resetAnimations(screenId) {
+    const screen = document.getElementById('s-' + screenId);
+    if (!screen) return;
+    screen.querySelectorAll('.animate-in').forEach(el => {
+      el.style.animationName = 'none';
+      requestAnimationFrame(() => { el.style.animationName = ''; });
+    });
+  }
+
+  // ── Bar chart animation ──
+  const barData = [
+    {a:72,b:55},{a:58,b:48},{a:85,b:62},{a:90,b:70},{a:68,b:50},{a:95,b:72},{a:78,b:60}
+  ];
+  function animateBars() {
+    barData.forEach((d, i) => {
+      setTimeout(() => {
+        const ba = document.getElementById('b'+i);
+        const bb = document.getElementById('b'+i+'b');
+        if (ba) ba.style.height = d.a + 'px';
+        if (bb) bb.style.height = d.b + 'px';
+      }, i * 80);
+    });
+  }
+
+  // ── CountUp animation ──
+  function countUp(el, target, suffix, duration = 1200) {
+    const start = performance.now();
+    function update(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(ease * target).toLocaleString('vi') + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  function animateCounters() {
+    const v = document.getElementById('cnt-views');
+    const h = document.getElementById('cnt-hash');
+    const p = document.getElementById('cnt-prod');
+    const vi = document.getElementById('cnt-vid');
+    if (v) countUp(v, 11356, '', 1200);
+    if (h) countUp(h, 245, '', 1000);
+    if (p) countUp(p, 1204, '', 1100);
+    if (vi) countUp(vi, 9900, '', 1000);
+  }
+
+  // ── Filter chip toggle ──
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      const siblings = this.parentElement.querySelectorAll('.filter-chip');
+      siblings.forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ── Tab pill toggle ──
+  document.querySelectorAll('.tab-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      const siblings = this.parentElement.querySelectorAll('.tab-pill');
+      siblings.forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+      animateBars();
+    });
+  });
+
+  // ── Touch ripple feedback ──
+  document.querySelectorAll('.list-item, .product-card, .hashtag-row, .menu-item, .trend-chip').forEach(el => {
+    el.addEventListener('click', function() {
+      this.style.transform = 'scale(0.97)';
+      setTimeout(() => this.style.transform = '', 150);
+    });
+  });
+</script>
+</body>
+</html>
